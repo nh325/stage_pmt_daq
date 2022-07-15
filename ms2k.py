@@ -1,4 +1,4 @@
-# ms2k.py
+# ms2k.py from ASI website http://asiimaging.com/docs/python
 from serialport import SerialPort
  
 class MS2000(SerialPort):
