@@ -1,16 +1,9 @@
-from serial import Serial
-from serial import SerialException
-from serial import EIGHTBITS
-from serial import PARITY_NONE
-from serial import STOPBITS_ONE
-from serial.tools import list_ports
-from serialport import SerialPort
 from ms2k import MS2000
 
 import pyvisa
 
 import nidaqmx
-from nidaqmx.constants import AcquisitionType
+#from nidaqmx.constants import AcquisitionType
 
 
 def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, pmt, samp_rate):
@@ -55,7 +48,6 @@ def connect_pmt(instr):
     pmt2100 = rm.open_resource(instr)
     pmt2100.query('*IDN?')
     return pmt2100
-
 
 
 def main():
