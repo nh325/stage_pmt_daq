@@ -33,7 +33,7 @@ def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, pmt, samp_rate):
         pixelpos_y = pixelpos_y - pixelsize
         pixelpos_x = 0
         ms2k.move(0, pixelpos_y, 0)
-        #/ms2k.wait_for_device() #find better delay (too slow)
+       
 
 def connect_stage(com, baud_rate):
     ms2k = MS2000(com, baud_rate)
