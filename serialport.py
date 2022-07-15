@@ -1,4 +1,4 @@
-# serialport.py
+# serialport.py from ASI website http://asiimaging.com/docs/python
 from serial import Serial
 from serial import SerialException
 from serial import EIGHTBITS
