@@ -10,15 +10,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def task(samp_rate):
+def task(samp_collect, samp_rate):
     with nidaqmx.Task() as task:
         task.ai_channels.add_ai_voltage_chan("Dev2/ai0")
         task.timing.cfg_samp_clk_timing(samp_rate, sample_mode = AcquisitionType.FINITE, samps_per_chan = samp_rate)
-        data = task.read(samp_rate)
+        data = task.read(samp_collect)
         return (data)
 
 
-def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, pmt, samp_rate):
+def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, pmt, samp_collect, samp_rate):
     pixelpos_x = 0
     pixelpos_y = 0
     
@@ -36,7 +36,7 @@ def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, pmt, samp_rate):
             pmt.write("SENSe:FUNCtion:ON H10770PA-40")   #turn pmt on
 
             #collect data
-            data = task(samp_rate)
+            data = task(samp_collect, samp_rate)
             data_list.append(data)
 
             pmt.write("SENSe:FUNCtion:OFF H10770PA-40")    #turn pmt off
@@ -50,13 +50,13 @@ def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, pmt, samp_rate):
     return data_list
 
 
-def rough_integrate(data_matrix, pixelnum_x, pixelnum_y, samp_rate):
+def rough_integrate(data_matrix, pixelnum_x, pixelnum_y, samp_collect):
     new_matrix = []
-    total_pix = pixelnum_x*pixelnum_y
+    total_pix = pixelnum_x * pixelnum_y
     
     for i in range(0, total_pix):
         point_sum = 0
-        for j in range(0, samp_rate):
+        for j in range(0, samp_collect):
             point_sum += data_matrix[i][j]
        
         new_matrix.append(point_sum)
@@ -116,11 +116,12 @@ def main():
     pixelnum_x = 5   # probably 512x512
     pixelnum_y = 5
     pixelsize = 5   # 0.5 micron
-    samp_rate = 1000
+    samp_rate = 10000
+    samp_collect = 1000
 
     data_list = system(ms2k, pixelnum_x, pixelnum_y, pixelsize, pmt2100, samp_rate)
 
-    final_matrix = rough_integrate(data_list, pixelnum_x, pixelnum_y, samp_rate)
+    final_matrix = rough_integrate(data_list, pixelnum_x, pixelnum_y, samp_collect, samp_rate)
 
     print(final_matrix)
 
