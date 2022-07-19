@@ -42,18 +42,10 @@ def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, pmt, samp_rate):
         pixelpos_y = pixelpos_y - pixelsize
         pixelpos_x = 0
         ms2k.move(0, pixelpos_y, 0)
-        
-        pmt.write("SENSe:FUNCtion:ON H10770PA-40")
-
-        data = task(samp_rate)
-        data_list.append(data)
-
-        
-        pmt.write("SENSe:FUNCtion:OFF H10770PA-40")
-
         pixelpos_x = pixelpos_x + pixelsize
       
     return data_list
+
 
 def rough_integrate(data_matrix, pixelnum_x, pixelnum_y, samp_rate):
     new_matrix = []
@@ -66,10 +58,7 @@ def rough_integrate(data_matrix, pixelnum_x, pixelnum_y, samp_rate):
 
         
         new_matrix.append(point_sum)
-    
-    return new_matrix
 
-def reshape(new_matrix, pixelnum_x, pixelnum_y):
     final_matrix = np.reshape(new_matrix, (pixelnum_y, pixelnum_x))
     return final_matrix
 
@@ -114,7 +103,6 @@ def connect_pmt(instr, gain, bandwidth):
     return pmt
 
 
-
 def main():
     # scan system for com ports
     print(f"COM Ports: {MS2000.scan_ports()}")
@@ -130,9 +118,7 @@ def main():
 
     data_list = system(ms2k, pixelnum_x, pixelnum_y, pixelsize, pmt2100, samp_rate)
 
-    integrate_matrix = rough_integrate(data_list, pixelnum_x, pixelnum_y, samp_rate)
-
-    final_matrix = reshape (integrate_matrix, pixelnum_x, pixelnum_y)
+    final_matrix = rough_integrate(data_list, pixelnum_x, pixelnum_y, samp_rate)
 
     print(final_matrix)
 
