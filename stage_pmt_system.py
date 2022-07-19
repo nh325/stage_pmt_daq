@@ -10,57 +10,59 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def task(samp_collect, samp_rate):
-    with nidaqmx.Task() as task:
-        task.ai_channels.add_ai_voltage_chan("Dev2/ai0")
-        task.timing.cfg_samp_clk_timing(samp_rate, sample_mode = AcquisitionType.FINITE, samps_per_chan = samp_rate)
-        data = task.read(samp_collect)
-        return (data)
+# def task(samp_collect, samp_rate):
+#     with nidaqmx.Task() as task:
+#         task.ai_channels.add_ai_voltage_chan("Dev2/ai0")
+#         task.timing.cfg_samp_clk_timing(samp_rate, sample_mode = AcquisitionType.FINITE, samps_per_chan = samp_collect +1 )
+#         data = task.read(samp_collect)
+#         return (data)
 
 
-def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, pmt, samp_collect, samp_rate):
+def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, samp_collect, samp_rate):
     pixelpos_x = 0
     pixelpos_y = 0
     
     data_list = []
     
-    for x in range(20):
-         print('Calibrating...')
-         task(samp_rate)
-    
-    for j in range(0,pixelnum_y):
-        for i in range(0,pixelnum_x):
-            ms2k.move(pixelpos_x, pixelpos_y, 0)
-            pixelpos_x = pixelpos_x + pixelsize
+    with nidaqmx.Task() as task:
+        task.ai_channels.add_ai_voltage_chan("Dev2/ai0")
+        
+        print('Calibrating...')
+        for x in range(200):
+            task.timing.cfg_samp_clk_timing(samp_rate, sample_mode = AcquisitionType.FINITE, samps_per_chan = samp_collect +1 )
+        
+        print('Collecting Data...')
+        for j in range(pixelnum_y):
+            for i in range(pixelnum_x):
+                
+                ms2k.move(pixelpos_x, pixelpos_y, 0)
+                pixelpos_x = pixelpos_x + pixelsize
 
-            pmt.write("SENSe:FUNCtion:ON H10770PA-40")   #turn pmt on
-
-            #collect data
-            data = task(samp_collect, samp_rate)
-            data_list.append(data)
-
-            pmt.write("SENSe:FUNCtion:OFF H10770PA-40")    #turn pmt off
-            #ms2k.wait_for_device()
-            
-        pixelpos_y = pixelpos_y - pixelsize
-        pixelpos_x = 0
-        ms2k.move(0, pixelpos_y, 0)
-        pixelpos_x = pixelpos_x + pixelsize
-      
+                #collect data
+                task.timing.cfg_samp_clk_timing(samp_rate, sample_mode = AcquisitionType.FINITE, samps_per_chan = samp_collect +1 )
+                data = task.read(samp_collect)
+                #print (data)
+                data_list.append(data)
+                
+            pixelpos_y = pixelpos_y - pixelsize
+            pixelpos_x = 0
+            ms2k.move(0, pixelpos_y, 0)
+            print(str(pixelpos_y * -1) + '/' + str(pixelnum_y * pixelsize))
+        
     return data_list
-
 
 def rough_integrate(data_matrix, pixelnum_x, pixelnum_y, samp_collect):
     new_matrix = []
-    total_pix = pixelnum_x * pixelnum_y
+    total_pix = pixelnum_x*pixelnum_y
     
     for i in range(0, total_pix):
         point_sum = 0
         for j in range(0, samp_collect):
             point_sum += data_matrix[i][j]
-       
+                 
+        point_sum = point_sum * 100 / samp_collect
         new_matrix.append(point_sum)
-
+    
     final_matrix = np.reshape(new_matrix, (pixelnum_y, pixelnum_x))
     return final_matrix
 
@@ -86,14 +88,17 @@ def image_plot(matrix):
 def connect_stage(com, baud_rate):
     ms2k = MS2000(com, baud_rate)
     ms2k.connect_to_serial()
+    ms2k.set_max_speed('x', 100000)
+    ms2k.set_max_speed('y', 100000)
+
     if not ms2k.is_open():
         print("Exiting the program...")
         return
     return ms2k
 
-def connect_pmt(instr, gain, bandwidth):
+def configure_pmt(gain, bandwidth):
     rm = pyvisa.ResourceManager()
-    pmt = rm.open_resource(instr)
+    pmt = rm.open_resource('USB::0x1313::0x2F00::00AH0754::0::INSTR')
     print(pmt.query('*IDN?'))
 
     pmt.write('INSTrument:SELect GAIN')
@@ -111,17 +116,17 @@ def main():
     
     ms2k = connect_stage("COM3", 115200)
 
-    pmt2100 = connect_pmt('USB::0x1313::0x2F00::00AH0754::0::INSTR', 0.5, 250)
+    configure_pmt(0.5, 250)
 
-    pixelnum_x = 5   # probably 512x512
-    pixelnum_y = 5
+    pixelnum_x = 50   # probably 512x512
+    pixelnum_y = 50
     pixelsize = 5   # 0.5 micron
-    samp_rate = 10000
-    samp_collect = 1000
+    samp_rate = 1000000   #control speed in general
+    samp_collect = 1   #how many points
 
-    data_list = system(ms2k, pixelnum_x, pixelnum_y, pixelsize, pmt2100, samp_rate)
+    data_list = system(ms2k, pixelnum_x, pixelnum_y, pixelsize, samp_collect, samp_rate)
 
-    final_matrix = rough_integrate(data_list, pixelnum_x, pixelnum_y, samp_collect, samp_rate)
+    final_matrix = rough_integrate(data_list, pixelnum_x, pixelnum_y, samp_collect)
 
     print(final_matrix)
 
@@ -129,6 +134,7 @@ def main():
 
     # close the serial port
     ms2k.disconnect_from_serial()
+    #pmt.write("SENSe:FUNCtion:OFF H10770PA-40")
 
 
 if __name__ == "__main__":
