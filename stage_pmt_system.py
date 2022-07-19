@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 def task(samp_rate):
     with nidaqmx.Task() as task:
         task.ai_channels.add_ai_voltage_chan("Dev2/ai0")
-        task.timing.cfg_samp_clk_timing(samp_rate)
+        task.timing.cfg_samp_clk_timing(samp_rate, sample_mode = AcquisitionType.FINITE, samps_per_chan = samp_rate)
         data = task.read(samp_rate)
         return (data)
 
