@@ -42,7 +42,7 @@ class MS2000(SerialPort):
     def move(self, x: int=0, y: int=0, z: int=0) -> None:
         """Move the stage with an absolute move."""
         self.send_command(f"MOVE X={x} Y={y} Z={z}\r")
-        self.read_response()
+        #self.read_response()
  
     def move_axis(self, axis: str, distance: int) -> None:
         """Move the stage with an absolute move."""
@@ -52,7 +52,7 @@ class MS2000(SerialPort):
     def set_max_speed(self, axis: str, speed:int) -> None:
         """Set the speed on a specific axis. Speed is in mm/s."""
         self.send_command(f"SPEED {axis}={speed}\r")
-        self.read_response()
+        #self.read_response()
  
     def get_position(self, axis: str) -> int:
         """Return the position of the stage in ASI units (tenths of microns)."""
