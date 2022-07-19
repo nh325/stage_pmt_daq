@@ -24,7 +24,10 @@ def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, pmt, samp_rate):
     
     data_list = []
     
-
+    for x in range(20):
+         print('Calibrating...')
+         task(samp_rate)
+    
     for j in range(0,pixelnum_y):
         for i in range(0,pixelnum_x):
             ms2k.move(pixelpos_x, pixelpos_y, 0)
@@ -55,8 +58,7 @@ def rough_integrate(data_matrix, pixelnum_x, pixelnum_y, samp_rate):
         point_sum = 0
         for j in range(0, samp_rate):
             point_sum += data_matrix[i][j]
-
-        
+       
         new_matrix.append(point_sum)
 
     final_matrix = np.reshape(new_matrix, (pixelnum_y, pixelnum_x))
