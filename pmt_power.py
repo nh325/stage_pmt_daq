@@ -1,8 +1,8 @@
 import pyvisa
 
-def pmt_on():
+def pmt_on(instr):
     rm = pyvisa.ResourceManager()
-    pmt = rm.open_resource('USB::0x1313::0x2F00::00AH0754::0::INSTR')
+    pmt = rm.open_resource(instr)
     pmt.write("SENSe:FUNCtion:ON H10770PA-40")
 
     pmt.write("SENSe:FUNCtion:STATe? H10770PA-40")
@@ -13,9 +13,9 @@ def pmt_on():
     else:
         print("PMT turned on")
 
-def pmt_off():
+def pmt_off(instr):
     rm = pyvisa.ResourceManager()
-    pmt = rm.open_resource('USB::0x1313::0x2F00::00AH0754::0::INSTR')
+    pmt = rm.open_resource(instr)
     pmt.write("SENSe:FUNCtion:OFF H10770PA-40")
 
     pmt.write("SENSe:FUNCtion:STATe? H10770PA-40")
@@ -26,7 +26,5 @@ def pmt_off():
     else:
         print("PMT turned off")
 
-pmt_on()
-#pmt_off()
     
 
