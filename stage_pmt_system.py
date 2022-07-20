@@ -115,24 +115,23 @@ def main():
     # scan system for com ports
     print(f"COM Ports: {MS2000.scan_ports()}")
     
-    ms2k = connect_stage("COM3", 115200)
-
-    configure_pmt(0.6, 250)
-
-    #paramters
-    pixelnum_x = 50   
-    pixelnum_y = 50
+    pixelnum_x = 100   # probably 512x512
+    pixelnum_y = 100
     pixelsize = 5   # 0.5 micron
     samp_rate = 1000000   #control speed in general
-    samp_collect = 1   #how many data points per pixel
+    samp_collect = 1   #how many points
+    
+    ms2k = connect_stage("COM3", 115200)
 
-    data_list = system(ms2k, pixelnum_x, pixelnum_y, pixelsize, samp_collect, samp_rate)
+    if configure_pmt(0.6, 250) == True:
 
-    final_matrix = rough_integrate(data_list, pixelnum_x, pixelnum_y, samp_collect)
+        data_list = system(ms2k, pixelnum_x, pixelnum_y, pixelsize, samp_collect, samp_rate)
 
-    print(final_matrix)
+        final_matrix = rough_integrate(data_list, pixelnum_x, pixelnum_y, samp_collect)
 
-    image_plot(final_matrix)
+        print(final_matrix)
+
+        image_plot(final_matrix)
 
     # close the serial port
     ms2k.disconnect_from_serial()
