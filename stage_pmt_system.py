@@ -54,7 +54,7 @@ def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, samp_collect, samp_rate):
 
 def rough_integrate(data_matrix, pixelnum_x, pixelnum_y, samp_collect):
     new_matrix = []
-    total_pix = pixelnum_x*pixelnum_y
+    total_pix = pixelnum_x * pixelnum_y
     
     for i in range(0, total_pix):
         point_sum = 0
@@ -100,15 +100,19 @@ def connect_stage(com, baud_rate):
 def configure_pmt(gain, bandwidth):
     rm = pyvisa.ResourceManager()
     pmt = rm.open_resource('USB::0x1313::0x2F00::00AH0754::0::INSTR')
-    print('Connected to ' + pmt.query('*IDN?'))
-
+    pmt.write("SENSe:FUNCtion:STATe? H10770PA-40")
+    if int(pmt.read()) != 1:
+        print('Turn PMT ON for 30 minutes') 
+        return False
+    
+    print('Connected to ' + pmt.query('*IDN?')
     pmt.write('INSTrument:SELect GAIN')
     pmt.write('SOURce:VOLTage:LEVel:IMMediate:AMPLitude ' + str(gain))
     pmt.write('SOURce:VOLTage:LEVel:IMMediate:AMPLitude?')
     print('Selected Gain: ' + pmt.read())
 
     pmt.write('SENSe:FILTer:LPASs:FREQuency ' + str(bandwidth))
-    return pmt
+    return False
 
 
 def main():
@@ -123,7 +127,7 @@ def main():
     
     ms2k = connect_stage("COM3", 115200)
 
-    if configure_pmt(0.6, 250) == True:
+    if configure_pmt(0.6, 250):
 
         data_list = system(ms2k, pixelnum_x, pixelnum_y, pixelsize, samp_collect, samp_rate)
 
