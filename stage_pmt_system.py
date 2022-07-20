@@ -30,6 +30,7 @@ def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, samp_collect, samp_rate):
         print('Calibrating...')
         for x in range(200):
             task.timing.cfg_samp_clk_timing(samp_rate, sample_mode = AcquisitionType.FINITE, samps_per_chan = samp_collect +1 )
+            task.read(samp_collect)
         
         print('Collecting Data...')
         for j in range(pixelnum_y):
@@ -40,14 +41,14 @@ def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, samp_collect, samp_rate):
 
                 #collect data
                 task.timing.cfg_samp_clk_timing(samp_rate, sample_mode = AcquisitionType.FINITE, samps_per_chan = samp_collect +1 )
-                data = task.read(samp_collect)
-                #print (data)
+                data = task.read()
+                
                 data_list.append(data)
                 
             pixelpos_y = pixelpos_y - pixelsize
             pixelpos_x = 0
             ms2k.move(0, pixelpos_y, 0)
-            print(str(pixelpos_y * -1) + '/' + str(pixelnum_y * pixelsize))
+            print(str(pixelpos_y * -1) + '/' + str(pixelnum_y * pixelsize))   #progress
         
     return data_list
 
@@ -99,7 +100,7 @@ def connect_stage(com, baud_rate):
 def configure_pmt(gain, bandwidth):
     rm = pyvisa.ResourceManager()
     pmt = rm.open_resource('USB::0x1313::0x2F00::00AH0754::0::INSTR')
-    print(pmt.query('*IDN?'))
+    print('Connected to ' + pmt.query('*IDN?'))
 
     pmt.write('INSTrument:SELect GAIN')
     pmt.write('SOURce:VOLTage:LEVel:IMMediate:AMPLitude ' + str(gain))
@@ -116,13 +117,14 @@ def main():
     
     ms2k = connect_stage("COM3", 115200)
 
-    configure_pmt(0.5, 250)
+    configure_pmt(0.6, 250)
 
-    pixelnum_x = 50   # probably 512x512
+    #paramters
+    pixelnum_x = 50   
     pixelnum_y = 50
     pixelsize = 5   # 0.5 micron
     samp_rate = 1000000   #control speed in general
-    samp_collect = 1   #how many points
+    samp_collect = 1   #how many data points per pixel
 
     data_list = system(ms2k, pixelnum_x, pixelnum_y, pixelsize, samp_collect, samp_rate)
 
