@@ -22,15 +22,16 @@ def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, samp_collect, samp_rate):
     pixelpos_x = 0
     pixelpos_y = 0
     
-    data_list = []
+    data_matrix = []
     
     with nidaqmx.Task() as task:
         task.ai_channels.add_ai_voltage_chan("Dev2/ai0")
+        task.timing.cfg_samp_clk_timing(samp_rate, sample_mode = AcquisitionType.FINITE, samps_per_chan = samp_collect * 10000)
+        task.start()
         
         print('Calibrating...')
         for x in range(200):
-            task.timing.cfg_samp_clk_timing(samp_rate, sample_mode = AcquisitionType.FINITE, samps_per_chan = samp_collect +1 )
-            task.read(samp_collect)
+            task.read()
         
         print('Collecting Data...')
         for j in range(pixelnum_y):
@@ -40,15 +41,15 @@ def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, samp_collect, samp_rate):
                 pixelpos_x = pixelpos_x + pixelsize
 
                 #collect data
-                task.timing.cfg_samp_clk_timing(samp_rate, sample_mode = AcquisitionType.FINITE, samps_per_chan = samp_collect +1 )
-                data = task.read()
+                data = task.read(samp_collect)
+                data_matrix.append(data)
                 
-                data_list.append(data)
-                
-            pixelpos_y = pixelpos_y - pixelsize
+            pixelpos_y = pixelpos_y + pixelsize
             pixelpos_x = 0
             ms2k.move(0, pixelpos_y, 0)
-            print(str(pixelpos_y * -1) + '/' + str(pixelnum_y * pixelsize))   #progress
+            print(str(pixelpos_y) + '/' + str(pixelnum_y * pixelsize))
+        
+        task.stop()
         
     return data_list
 
