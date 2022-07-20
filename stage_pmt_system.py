@@ -112,7 +112,7 @@ def configure_pmt(gain, bandwidth):
     print('Selected Gain: ' + pmt.read())
 
     pmt.write('SENSe:FILTer:LPASs:FREQuency ' + str(bandwidth))
-    return False
+    return True
 
 
 def main():
