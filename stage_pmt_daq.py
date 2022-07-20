@@ -21,16 +21,18 @@ import matplotlib.pyplot as plt
 def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, samp_collect, samp_rate):
     pixelpos_x = 0
     pixelpos_y = 0
+    calibrate = 200
     
     data_matrix = []
+    total_samps = pixelnum_x * pixelnum_y + calibrate
     
     with nidaqmx.Task() as task:
         task.ai_channels.add_ai_voltage_chan("Dev2/ai0")
-        task.timing.cfg_samp_clk_timing(samp_rate, sample_mode = AcquisitionType.FINITE, samps_per_chan = samp_collect * 100000)
+        task.timing.cfg_samp_clk_timing(samp_rate, sample_mode = AcquisitionType.FINITE, samps_per_chan = total_samps)
         task.start()
         
         print('Calibrating...')
-        for x in range(200):
+        for x in range(calibrate):
             task.read()
         
         print('Collecting Data...')
