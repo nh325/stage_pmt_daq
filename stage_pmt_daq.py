@@ -30,8 +30,11 @@ def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, samp_collect, samp_rate):
     samp_rate: int speed of sample collection in samples/second
     '''
     #starting absolute position
-    pixelpos_x = 0
+    pixelpos_x_i = -2000000
+    pixelpos_x = -2000000
     pixelpos_y = 0
+    ms2k.move(pixelpos_x, pixelpos_y, 0)
+    ms2k.wait_for_device()
 
     #data collection delay for calibration
     calibrate = 200
@@ -53,6 +56,7 @@ def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, samp_collect, samp_rate):
             for i in range(pixelnum_x):
                 
                 ms2k.move(pixelpos_x, pixelpos_y, 0)
+                ms2k.wait_for_device()
                 pixelpos_x = pixelpos_x + pixelsize
 
                 #collect data
@@ -60,8 +64,9 @@ def system(ms2k, pixelnum_x, pixelnum_y, pixelsize, samp_collect, samp_rate):
                 data_matrix.append(data)
                 
             pixelpos_y = pixelpos_y + pixelsize
-            pixelpos_x = 0
-            ms2k.move(0, pixelpos_y, 0)
+            pixelpos_x = pixelpos_x_i
+            ms2k.move(pixelpos_x_i, pixelpos_y, 0)
+            ms2k.wait_for_device()
             print(str(int((pixelpos_y/pixelsize))) + '/' + str(pixelnum_y) + ' rows acquired')  #just for progress
         
         task.stop()
