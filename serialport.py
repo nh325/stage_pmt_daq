@@ -83,7 +83,7 @@ class SerialPort:
         # send the serial command to the controller
         command = bytes(f"{cmd}\r", encoding="ascii")
         self.serial_port.write(command)
-        #self.print(f"Send: {command.decode(encoding='ascii')}")
+        self.print(f"Send: {command.decode(encoding='ascii')}")
  
     def read_response(self) -> str:
         """Read a line from the serial response."""
