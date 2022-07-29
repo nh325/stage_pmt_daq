@@ -110,15 +110,15 @@ def image_plot(matrix):
     plt.colorbar()
     plt.grid(True)
 
-    plt.figure(2)
-    plt.imshow(matrix, interpolation='bilinear')
-    plt.colorbar()
-    plt.grid(True)
+#     plt.figure(2)
+#     plt.imshow(matrix, interpolation='bilinear')
+#     plt.colorbar()
+#     plt.grid(True)
 
-    plt.figure(3)
-    plt.imshow(matrix, interpolation='bicubic')
-    plt.colorbar()
-    plt.grid(True)
+#     plt.figure(3)
+#     plt.imshow(matrix, interpolation='bicubic')
+#     plt.colorbar()
+#     plt.grid(True)
 
     plt.show()  
 
